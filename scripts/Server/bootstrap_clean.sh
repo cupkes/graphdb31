@@ -3,7 +3,7 @@
 # Script for initializing NEO4J Server Config
 # This script must be run as the neo4j user
 # and must be run as super user
-# Script tested on x/xx/2017 by Christopher Upkes
+# Script tested on 1/24/2017 by Christopher Upkes
 #################################################
 
 #------------------------------------------------ 
@@ -29,7 +29,7 @@ GITTEST=$(yum list installed git |& grep Error | awk '{ print $1 }' | sed s/://)
 
 if [ -z $GITTEST ]; then
 	echo "GIT installed, removing GIT" && logger -p local0.notice -t $LOGTAG "removing GIT"
-	yum remove git && logger -p local0.notice -t $LOGTAG "GIT package removed"
+	yum remove -y git && logger -p local0.notice -t $LOGTAG "GIT package removed"
 else
 	if [ $GITTEST = "Error" ]; then
 		echo "GIT not installed"

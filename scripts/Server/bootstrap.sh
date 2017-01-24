@@ -3,7 +3,7 @@
 # Script for initializing NEO4J Server Config
 # This script must be run as the neo4j user
 # and must be run as super user
-# Script tested on x/xx/2017 by Christopher Upkes
+# Script tested on 1/24/2017 by Christopher Upkes
 #################################################
 
 #------------------------------------------------ 
@@ -11,7 +11,7 @@
 #------------------------------------------------
 LOGTAG=NEO4J_SUPPORT
 GITREPO="https://github.com/cupkes/LMInstall.git"
-GITCLONEMD="git clone $GITREPO"
+GITCLONECMD="git clone $GITREPO"
 REPODIR="/home/neo4j/repo"
 REPO="LMInstall"
 VERSION="3.1.0"
@@ -31,6 +31,7 @@ if [ -d /home/neo4j ]; then
 			logger -p local0.notice -t $LOGTAG "neo4j bootstrap ERROR"
 			exit 2
 		else
+			chown neo4j:neo4j $REPODIR
 			cd $REPODIR
 		fi
 		
@@ -51,6 +52,8 @@ else
 		yum install -y git
 	fi
 fi
+# setting http proxy
+source <(curl -sk https://sscgit.ast.lmco.com/projects/CP/repos/openstack-instance-utils/browse/lm-proxy/lm-proxy.sh?raw) 
 
 $GITCLONECMD
 if [ $? -ne 0 ]; then
@@ -60,7 +63,9 @@ if [ $? -ne 0 ]; then
 		exit 3
 else
 	cd $REPO
-	if [ ! -f $SUPPORT_TGZ_FILE || ! -f $NEO4J_SERVER_TGZ  || ! -f $INITSCRIPT  ]; then
+	if [[ -f $SUPPORT_TGZ_FILE && -f $NEO4J_SERVER_TGZ  && -f $INITSCRIPT  ]]; then
+		echo "required files found"
+	else
 		echo "unable to locate all required files"
 		echo "ERROR: Missing required files." >> $NEOLOG
 		logger -p local0.notice -t $LOGTAG "neo4j bootstrap script ERROR"
@@ -68,7 +73,6 @@ else
 	fi
 fi
 echo "Bootstrap complete.  Ready to initialize host"
-echo "Bootstrap complete.  Initializing host.  Calling $INITSCRIPT" >> $NEOLOG
 logger -p local0.notice -t $LOGTAG "neo4j bootstrap script completed"
 # call the initialization script
 # chmod +x $INITSCRIPT
