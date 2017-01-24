@@ -32,6 +32,7 @@ if [ -d /home/neo4j ]; then
 			exit 2
 		else
 			cd $REPODIR
+		fi
 		
 else
 	echo "could not locate neo4j home directory, aborting script"
@@ -57,7 +58,6 @@ if [ $? -ne 0 ]; then
 		echo "ERROR: unable to call $GITCLONE." >> $NEOLOG
 		logger -p local0.notice -t $LOGTAG "neo4j bootstrap ERROR"
 		exit 3
-	fi
 else
 	cd $REPO
 	if [ ! -f $SUPPORT_TGZ_FILE || ! -f $NEO4J_SERVER_TGZ  || ! -f $INITSCRIPT  ]; then

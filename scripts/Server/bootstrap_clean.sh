@@ -21,18 +21,7 @@ INITSCRIPT=neo4j_init.sh
 #------------------------------------------------ 
 # END Script variables
 #------------------------------------------------
-
 logger -p local0.notice -t $LOGTAG "neo4j bootstrap_clean script called"
-if [ -d $REPO ]; then
-	echo "located neo4j repository"
-	cd /home/neo4j
-	rm -r repo
-	echo "cleaning up neo4j home"
-	logger -p local0.notice -t $LOGTAG "neo4j repsitory removed"
-else
-	echo "could not locate neo4j repository, aborting script"
-	exit 1
-fi
 
 GITTEST=$(yum list installed git |& grep Error | awk '{ print $1 }' | sed s/://) 
 
@@ -40,12 +29,25 @@ GITTEST=$(yum list installed git |& grep Error | awk '{ print $1 }' | sed s/://)
 
 if [ -z $GITTEST ]; then
 	echo "GIT installed, removing GIT" && logger -p local0.notice -t $LOGTAG "removing GIT"
-	yum remove git
+	yum remove git && logger -p local0.notice -t $LOGTAG "GIT package removed"
 else
 	if [ $GITTEST = "Error" ]; then
 		echo "GIT not installed"
 	fi
 fi
+
+# remove install repository
+if [ -d $REPODIR ]; then
+	echo "located neo4j repository"
+	cd /home/neo4j
+	rm -r repo
+	echo "cleaning up neo4j home"
+	logger -p local0.notice -t $LOGTAG "neo4j repsitory removed"
+else
+	echo "could not locate neo4j repository"
+fi
+
+
 # make sure the neo4j home directory exists
 logger -p local0.notice -t $LOGTAG "neo4j bootstrap_clean script completed"
 
