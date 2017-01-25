@@ -26,7 +26,7 @@ NEO4J_SERVER_CONFIG_FILE=neo4j.conf
 # make sure the neo4j home directory exists
 logger -p local0.notice -t $LOGTAG "neo4j bootstrap script called"
 
-if [ -d /home/neo4j ]; then
+if [ -d $NEOUSERHOME ]; then
 	echo "located neo4j home directory"
 	mkdir $REPODIR
 		if [ $? -ne 0 ]; then
@@ -66,7 +66,7 @@ if [ $? -ne 0 ]; then
 		logger -p local0.notice -t $LOGTAG "neo4j bootstrap ERROR"
 		exit 3
 else
-	cd $REPO
+	cd $REPODIR/$REPO
 	if [[ -f $SUPPORT_TGZ_FILE && -f $NEO4J_SERVER_TGZ  && -f $INITSCRIPT && -f $CLUSTERCONF_FILE && -f $SAMBACONF_FILE && -f $NEO4J_SERVER_CONFIG_FILE  ]]; then
 		echo "required files found"
 	else
