@@ -340,7 +340,7 @@ echo "System must be restarted before changes take affect"
 # all nodes in the cluster by their actual hostnames
 #
 echo "updating /etc/hosts file"
-echo "$(DATE) updating /etc/hosts file" >> $NEOLOG
+echo "$(date) updating /etc/hosts file" >> $NEOLOG
 if [ -e /etc/hosts ]; then
 	cp /etc/hosts /etc/hosts.bak
 	cat << ENDOC >> /etc/hosts
