@@ -27,7 +27,7 @@ NEOLOG=neo4j_install.log
 CONF_FILE=neo4j_support.conf
 CLUSTERCONF_FILE=cluster.conf
 # samba files
-SAMBACONF_FILE=neoj4_smb.conf
+SAMBACONF_FILE=neo4j_smb.conf
 SAMBA_SCRIPT=samba_config.sh
 # firewall files
 FIREWALL_SCRIPT=firewall_config.sh
