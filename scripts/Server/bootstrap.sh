@@ -31,7 +31,7 @@ if [ -d /home/neo4j ]; then
 	mkdir $REPODIR
 		if [ $? -ne 0 ]; then
 			echo "unable to create directory $REPODIR"
-			echo "ERROR: unable to create $REPODIR." >> $NEOLOG
+			echo "ERROR: unable to create $REPODIR."
 			logger -p local0.notice -t $LOGTAG "neo4j bootstrap ERROR"
 			exit 2
 		else
@@ -62,7 +62,7 @@ source <(curl -sk https://sscgit.ast.lmco.com/projects/CP/repos/openstack-instan
 $GITCLONECMD
 if [ $? -ne 0 ]; then
 		echo "unable to call git clone"
-		echo "ERROR: unable to call $GITCLONE." >> $NEOLOG
+		echo "ERROR: unable to call $GITCLONE."
 		logger -p local0.notice -t $LOGTAG "neo4j bootstrap ERROR"
 		exit 3
 else
@@ -71,7 +71,7 @@ else
 		echo "required files found"
 	else
 		echo "unable to locate all required files"
-		echo "ERROR: Missing required files." >> $NEOLOG
+		echo "ERROR: Missing required files."
 		logger -p local0.notice -t $LOGTAG "neo4j bootstrap script ERROR"
 		exit 4
 	fi
