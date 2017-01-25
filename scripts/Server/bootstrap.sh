@@ -67,7 +67,7 @@ if [ $? -ne 0 ]; then
 		exit 3
 else
 	cd $REPO
-	if [[ -f $SUPPORT_TGZ_FILE && -f $NEO4J_SERVER_TGZ  && -f $INITSCRIPT && -f $CLUSTERCONF_FILE && -f $SAMBACONF_FILEb && -f $NEO4J_SERVER_CONFIG_FILE  ]]; then
+	if [[ -f $SUPPORT_TGZ_FILE && -f $NEO4J_SERVER_TGZ  && -f $INITSCRIPT && -f $CLUSTERCONF_FILE && -f $SAMBACONF_FILE && -f $NEO4J_SERVER_CONFIG_FILE  ]]; then
 		echo "required files found"
 	else
 		echo "unable to locate all required files"
