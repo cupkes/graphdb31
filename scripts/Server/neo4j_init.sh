@@ -207,7 +207,7 @@ echo "neo4j user .bash_profile updated" >> $NEOLOG
 echo "copying files to support directories"
 echo "$(date) copying files to support directories" >> $NEOLOG
 
-if [ -e $NEO4J_SERVER_CONFIG_FILE ]; then cp $NEO4J_SRV_PROP_FILE $NEOETC/$NEO4J_SERVER_CONFIG_FILE && echo "$NEO4J_SRV_PROP_FILE copied"; fi
+if [ -e $NEO4J_SERVER_CONFIG_FILE ]; then cp $NEO4J_SERVER_CONFIG_FILE $NEOETC/$NEO4J_SERVER_CONFIG_FILE && echo "NEO4J_SERVER_CONFIG_FILE copied"; fi
 if [ -e $SAMBACONF_FILE ]; then cp $SAMBACONF_FILE $NEOETC/$SAMBACONF_FILE && echo "$SAMBACONF_FILE copied"; fi
 
 # uncompress the neo4j support tarball
@@ -231,7 +231,7 @@ cd $NEOBASE
 
 echo "$(date) copying support files " >> $NEOLOG
 
-if [ -e $CONF_FILE ]; then cp $CONF_FILE $NEOETC/$CONF_FILE && echo "$CONF_FILE copied" ; fi
+# if [ -e $CONF_FILE ]; then cp $CONF_FILE $NEOETC/$CONF_FILE && echo "$CONF_FILE copied" ; fi
 if [ -e $MONITOR_SCRIPT ]; then cp $MONITOR_SCRIPT $NEOETC/$MONITOR_SCRIPT && echo "$MONITOR_SCRIPT copied"; fi
 
 logger -p local0.notice -t $LOGTAG "support files deployed"
