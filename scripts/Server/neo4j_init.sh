@@ -403,7 +403,7 @@ logger -p local0.notice -t $LOGTAG "neo4j file and directory ownership changed"
 # Auditing, Samba and Firewall Configuration
 #------------------------------------------------
 echo "executing host package installation and configuration file"
-echo "$(date) executing host package installation and configuration file"
+echo "$(date) executing host package installation and configuration file" >> $NEOLOG
 
 if [[ $INIT_HOST = "YES" && -e $INIT_HOST_FILE ]]; then
 	chmod +x $INIT_HOST_FILE
