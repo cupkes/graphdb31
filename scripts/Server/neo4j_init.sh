@@ -13,6 +13,7 @@
 VERSION="3.1.0"
 LOGTAG=NEO4J_SUPPORT
 # specify the neo4j directory tree
+NEOUSERHOME="/home/neo4j"
 NEOBASE="/opt/neo4j"
 NEOHOME="$NEOBASE/neo4j-enterprise-$VERSION"
 NEOSUPP="$NEOBASE/support"
@@ -20,14 +21,13 @@ NEOBIN="$NEOSUPP/bin"
 NEOETC="$NEOSUPP/etc"
 NEOBAK="$NEOBASE/backup"
 NEOCONF="$NEOHOME/conf"
-NEODATA="/data1/neo4j"
 # specify the neo4j script install file
 NEOLOG=neo4j_install.log
 # pointers to all support files included in the support tarball
 CONF_FILE=neo4j_support.conf
-CLUSTER_CONFIG=cluster.conf
+CLUSTERCONF_FILE=cluster.conf
 # samba files
-SAMBA_FILE=neoj4_smb.conf
+SAMBACONF_FILE=neoj4_smb.conf
 SAMBA_SCRIPT=samba_config.sh
 # firewall files
 FIREWALL_SCRIPT=firewall_config.sh
@@ -40,9 +40,6 @@ NEO4J_SERVER_TGZ=neo4j-enterprise-$VERSION-unix.tar.gz
 SUPPORT_SCRIPT=neo4j_support_diags.sh
 MONITOR_SCRIPT=neo4j_monitor.sh
 BACKUP_SCRIPT=neo4j_backup_routine.sh
-# provide address for monitoring and security emails
-# this can be one or more adddresses, separated by commas
-ADMIN_EMAIL=admin@acme.com
 # provide the crontab entry for the intrusion detection module
 AIDE_ENTRY="0 1 * * * /usr/sbin/aide --check"
 # host configuration details
@@ -53,8 +50,26 @@ INIT_HOST_FILE=neo4j_host_init.sh
 #------------------------------------------------
 # End script variables
 #------------------------------------------------
-CURRDIR=$(pwd)
-
+# change to neo4j user home directory
+if [ -d $NEOUSERHOME ]; then
+	echo "located neo4j home directory"
+	echo "moving to neo4j home directory"
+	cd $NEOUSERHOME
+else
+	echo "could not locate neo4j home directory"
+	echo "aborting script"
+	exit 1
+fi
+# ensure bootstrap files exist in neo4j user home directory
+if [[ -f $SUPPORT_TGZ_FILE && -f $NEO4J_SERVER_TGZ  && -f $CLUSTERCONF_FILE && -f $SAMBACONF_FILE && -f $NEO4J_SERVER_CONFIG_FILE ]]; then
+	echo "required files found"
+else
+	echo "unable to locate all required files"
+	echo "ERROR: Missing required files." >> $NEOLOG
+	logger -p local0.notice -t $LOGTAG "ERROR:  cannot find bootstrap files"
+	exit 2
+fi
+# locate or initialize install log file
 if [ -e $NEOLOG ]; then
 	echo "located log file"
 	echo "---------------------------------------------" >> $NEOLOG
@@ -64,14 +79,8 @@ else
 	echo "$(date) : begin Neo4J installation logging --" > $NEOLOG
 fi
 
-if [ -e $CLUSTER_CONFIG ]; then
-	echo "located cluster config file"
-else
-	echo "could not locate cluster configruation file, aborting script"
-	exit 1
-fi
-
-source $CURRDIR/$CLUSTER_CONFIG
+# source the cluster config file to initialize customer specific variables
+source $CLUSTERCONF_FILE
 
 # the node details of the script destination
 if [ $THISNUM = 1 ]; then
@@ -88,7 +97,7 @@ elif [ $THISNUM = 3 ]; then
 	THISIP=$NODE3_IP
 else
 	echo "bad cluster node number in cluster config file, aborting script"
-	exit 1
+	exit 3
 fi
 
 INIT_HOST=$INITIALIZE_HOST # update the INIT_HOST value from the cluster configuration
@@ -111,16 +120,6 @@ logger -p local0.notice -t $LOGTAG "neo4j home and support directories created"
 #------------------------------------------------
 # Update current user (Neo4j) .bash_profile
 #------------------------------------------------
-
-# make sure the neo4j home directory exists
-
-if [ -d /home/neo4j ]; then
-	echo "located neo4j home directory"
-else
-	echo "could not locate neo4j home directory, aborting script"
-	exit 2
-fi
-
 #
 # update the profile script to include essential path values
 # and helpful aliases and shell configurations
@@ -128,9 +127,9 @@ fi
 
 echo "updating .bash_profile"
 
-cp /home/neo4j/.bash_profile /home/neo4j/.bash_profile.bak
+cp $NEOUSERHOME/.bash_profile $NEOUSERHOME/.bash_profile.bak
 
-cat << ENDOC >> /home/neo4j/.bash_profile
+cat << ENDOC >> $NEOUSERHOME/.bash_profile
 # NEO4J SUPPORT MODIFICATION
 if [ -d "/opt/neo4j" ] ; then
 	PATH=$PATH:opt/neo4j
@@ -182,7 +181,7 @@ if [ -e $SUPPORT_TGZ_FILE ]; then
 else
 	echo "unable to locate neo4j support tar file, aborting script, $SUPPORT_TGZ_FILE"
 	echo "$(date) ERROR:  unable to locate support tar file $SUPPORT_TGZ_FILE, aborting script"  >> $NEOLOG
-	exit 3
+	exit 4
 fi
 
 cd $NEOBASE
@@ -199,7 +198,7 @@ logger -p local0.notice -t $LOGTAG "support files deployed"
 
 # uncompress neo4j enterprise server tarball
 
-cd $CURRDIR
+cd $NEOUSERHOME
 cp $NEO4J_SERVER_TGZ $NEOBASE/$NEO4J_SERVER_TGZ
 tar -zxvf $NEOBASE/$NEO4J_SERVER_TGZ -C $NEOBASE && logger -p local0.notice -t $LOGTAG "Neo4j Enterprise Server files deployed"
 
@@ -213,17 +212,22 @@ if [ -d $NEOCONF ]; then
 	logger -p local0.notice -t $LOGTAG "neo4j cluster configuration files deployed"
 	
 	# update server properties file with cluster configuration details
+	echo "updating neofj server configuration file with configuration details"
+	echo "$(date) updating server configuration file" >> $NEOLOG
 	
+	sed -i s/xdatadir/$NEODATA/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
+	sed -i s/xdataimport/$NEOIMPORT/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
 	sed -i s/xthis_server_num/$THISNUM/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
 	sed -i s/xsrv1ip/$NODE1_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
 	sed -i s/xsrv2ip/$NODE2_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
 	sed -i s/xsrv3ip/$NODE3_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
-	sed -i s/xthis_server_ip/$THISIP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
+# using 127.0.0.1 for this server's IP in the HA cluster configuration section
+#	sed -i s/xthis_server_ip/$THISIP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
 	
-	
+	echo "$(date) noe4j server configuration file updated" >> $NEOLOG
 	logger -p local0.notice -t $LOGTAG "neo4j cluster configuration updated"
 else
-	echo "cannot locate neo4j home directory"
+	echo "cannot locate neo4j configuration directory"
 	echo "manual configuration of neo4j cluster is required"
 	echo "$(date) ERROR: unable to locate home directory" >> $NEOLOG
 	echo "$(date) ERROR: manual configuration of neo4j cluster required" >> $NEOLOG
@@ -231,7 +235,7 @@ else
 	logger -p local0.notice -t $LOGTAG "unable to deploy neo4j ccluster configuration files"
 fi
 
-cd $CURRDIR
+cd $NEOUSERHOME
 
 #------------------------------------------------
 # Set Neo4j Server specific os configurations
@@ -241,31 +245,35 @@ cd $CURRDIR
 # we need to update some server configuration files
 # in order for the neo4j cluster to function properly
 #
+
+echo "updating limits.conf file"
+echo "$(date) updating limits.conf file"
 if [ -e /etc/security/limits.conf ]; then
-cp /etc/security/limits.conf /etc/security/limits.conf.bak
-cat << ENDOC >> /etc/security/limits.conf
-# NEO4J SUPPORT MODIFICATION
-neo4j   soft    nofile  40000
-neo4j   hard    nofile  40000
-# END NEO4J SUPPORT MODIFICATION
+	cp /etc/security/limits.conf /etc/security/limits.conf.bak
+	cat << ENDOC >> /etc/security/limits.conf
+	# NEO4J SUPPORT MODIFICATION
+	neo4j   soft    nofile  40000
+	neo4j   hard    nofile  40000
+	# END NEO4J SUPPORT MODIFICATION
 ENDOC
 	
-logger -p local0.notice -t $LOGTAG "limits.conf modified"
-echo "modified limits.conf"
+	logger -p local0.notice -t $LOGTAG "limits.conf modified"
+	echo "modified limits.conf"
 else
 	echo "unable to locate limits.conf file"
 	echo "$(date) ERROR: unable to locate limits.conf file.  Manual config required" >> $NEOLOG
 fi
-
+echo "updating /etc/pam.d/su file"
+echo "$(date) updating /etc/pam.d/su file" >> $NEOLOG
 if [ -e /etc/pam.d/su ]; then
-cp /etc/pam.d/su /etc/pam.d/su.bak
-cat << ENDOC >> /etc/pam.d/su
+	cp /etc/pam.d/su /etc/pam.d/su.bak
+	cat << ENDOC >> /etc/pam.d/su
 # NEO4J SUPPORT MODIFICATION
 session    required   pam_limits.so
 # END NEO4J SUPPORT MODIFICATION
 ENDOC
-logger -p local0.notice -t $LOGTAG "/etc/pam.d/su file modified"
-echo "modified /etc/pam.d/su file"
+	logger -p local0.notice -t $LOGTAG "/etc/pam.d/su file modified"
+	echo "modified /etc/pam.d/su file"
 
 else
 	echo "unable to locate /etc/pam.d/su file"
@@ -291,20 +299,22 @@ echo "System must be restarted before changes take affect"
 # we add nodes to host file so we can reference
 # all nodes in the cluster by their actual hostnames
 #
+echo "updating /etc/hosts file"
+echo "$(DATE) updating /etc/hosts file" >> $NEOLOG
 if [ -e /etc/hosts ]; then
-cp /etc/hosts /etc/hosts.bak
-cat << ENDOC >> /etc/hosts
+	cp /etc/hosts /etc/hosts.bak
+	cat << ENDOC >> /etc/hosts
 # NEO4J SUPPORT MODIFICATION
 $NODE1_IP	$NODE1_HN
 $NODE2_IP	$NODE2_HN
 $NODE3_IP	$NODE3_HN
 # END NEO4J SUPPORT MODIFICATION
 ENDOC
-echo "modified /etc/hosts file"
-logger -p local0.notice -t $LOGTAG "/etc/hosts modified"
+	echo "modified /etc/hosts file"
+	logger -p local0.notice -t $LOGTAG "/etc/hosts modified"
 else
 	echo "unable to locate /etc/hosts file"
-	echo "$(date) ERROR: unable to locate /etc/hosts file. Manual config required"
+	echo "$(date) ERROR: unable to locate /etc/hosts file. Manual config required" >> $NEOLOG
 fi
 
 #------------------------------------------------
@@ -318,7 +328,8 @@ fi
 # will be copied to the neo4j_support/bin directory
 # but will not be copied to /etc/cron.daily
 #
-
+echo "copying backup script to bin folder"
+echo "$(date) copying backup script to bin folder" >> $NEOLOG
 
 if [ -e $NEOBASE/$BACKUP_SCRIPT ]; then
 	cp $NEOBASE/$BACKUP_SCRIPT $NEOBIN/$BACKUP_SCRIPT
@@ -326,7 +337,7 @@ if [ -e $NEOBASE/$BACKUP_SCRIPT ]; then
 	echo "to schedule backup routine copy  $BACKUP_SCRIPT to /etc/cron.daily"
 else
 	echo "could not locate backup routine script"
-	echo "$(date) ERROR:  could not locate backup routine script"
+	echo "$(date) ERROR:  could not locate backup routine script" >> $NEOLOG
 fi
 
 #------------------------------------------------
@@ -338,14 +349,15 @@ fi
 # the space available in the neo4j/backup directory
 # Other monitoring routines should be added to the script.
 # 
-
+echo "copying monitor script to /etc/cron.daily"
+echo "$(date) copying monitor script to /etc/cron.daily" >> $NEOLOG
 if [ -e $NEOBASE/$MONITOR_SCRIPT ]; then
 	cp $NEOBASE/$MONITOR_SCRIPT /etc/cron.daily/$MONITOR_SCRIPT && chmod +x /etc/cron.daily/$MONITOR_SCRIPT
 	echo "copied monitor script to /etc/cron.daily/"
 	logger -p local0.notice -t $LOGTAG "file : $MONITOR_SCRIPT added to cron.daily"
 else
 	echo "could not locate monitor script $MONITOR_SCRIPT"
-	echo "$(date) ERROR:  could not locate monitor script, $MONITOR_SCRIPT"
+	echo "$(date) ERROR:  could not locate monitor script, $MONITOR_SCRIPT" >> $NEOLOG
 fi
 
 
@@ -359,13 +371,14 @@ fi
 # This script is used to provide the support team with a full set
 # of diagnostic information for use with troubleshooting production issues.
 #
-
+echo "copying support script to support bin directory"
+echo "$(date) copying support script to support bin directory" >> $NEOLOG
 if [ -e $NEOBASE/$SUPPORT_SCRIPT ]; then
 	cp $NEOBASE/$SUPPORT_SCRIPT $NEOBIN/$SUPPORT_SCRIPT && chmod +x $NEOBIN/$SUPPORT_SCRIPT
 	echo "copied support script"
 else	
 	echo "could not locate support script, $SUPPORT_SCRIPT"
-	echo "$(date) ERROR: could not locate support script, $SUPPORT_SCRIPT"
+	echo "$(date) ERROR: could not locate support script, $SUPPORT_SCRIPT" >> $NEOLOG
 fi
 
 #------------------------------------------------
@@ -377,7 +390,7 @@ fi
 # we want to make sure that we have the appropriate
 # user and group ownership defined
 #
-cd $CURRDIR
+cd $NEOUSERHOME
 
 chown -R neo4j:neo4j $NEOBASE
 chown -R neo4j:neo4j $NEOSUPP
@@ -389,6 +402,8 @@ logger -p local0.notice -t $LOGTAG "neo4j file and directory ownership changed"
 # includes installing Java, Intrustion Detection,
 # Auditing, Samba and Firewall Configuration
 #------------------------------------------------
+echo "executing host package installation and configuration file"
+echo "$(date) executing host package installation and configuration file"
 
 if [[ $INIT_HOST = "YES" && -e $INIT_HOST_FILE ]]; then
 	chmod +x $INIT_HOST_FILE
@@ -404,7 +419,7 @@ else
 	fi
 fi
 	
-echo "$(date) Neo4j_init.sh script fiinished"
+echo "$(date) Neo4j_init.sh script fiinished" >> $NEOLOG
 
 
 
