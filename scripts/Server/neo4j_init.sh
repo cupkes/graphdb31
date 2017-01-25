@@ -255,12 +255,13 @@ if [ -d $NEOCONF ]; then
 	echo "updating neofj server configuration file with configuration details"
 	echo "$(date) updating server configuration file" >> $NEOLOG
 	
-	sed -i s/xdatadir/$NEODATA/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
-	sed -i s/xdataimport/$NEOIMPORT/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
-	sed -i s/xthis_server_num/$THISNUM/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
-	sed -i s/xsrv1ip/$NODE1_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
-	sed -i s/xsrv2ip/$NODE2_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
-	sed -i s/xsrv3ip/$NODE3_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
+	sed -i s/xthis_server_num/$THISNUM/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_SERVER_CONFIG_FILE"
+	sed -i s/xsrv1ip/$NODE1_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_SERVER_CONFIG_FILE"
+	sed -i s/xsrv2ip/$NODE2_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_SERVER_CONFIG_FILE"
+	sed -i s/xsrv3ip/$NODE3_IP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_SERVER_CONFIG_FILE"
+	sed -i s/xdatadir/$NEODATA/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_SERVER_CONFIG_FILE"
+	sed -i s/xdataimport/$NEOIMPORT/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_SERVER_CONFIG_FILE"
+	
 # using 127.0.0.1 for this server's IP in the HA cluster configuration section
 #	sed -i s/xthis_server_ip/$THISIP/g $NEO4J_SERVER_CONFIG_FILE && echo "updated $NEO4J_PROP_FILE"
 	
