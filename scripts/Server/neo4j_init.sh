@@ -421,7 +421,7 @@ fi
 	
 echo "$(date) Neo4j_init.sh script fiinished" >> $NEOLOG
 
-
+logger -p local0.notice -t $LOGTAG "neo4j_init.sh script completed"
 
 
 
