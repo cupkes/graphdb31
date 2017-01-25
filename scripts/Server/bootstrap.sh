@@ -87,7 +87,7 @@ cp $REPODIR/$REPO/$NEO4J_SERVER_CONFIG_FILE $NEOUSERHOME/$NEO4J_SERVER_CONFIG_FI
 
 echo "Bootstrap complete.  Ready to initialize host"
 echo "edit $CLUSTERCONF_FILE and $SAMBACONF_FILE if you intend to install samba prior to executing $INITSCRIPT"
-
+chown -R neo4j:neo4j $NEOUSERHOME
 # mod the initialization script
 chmod +x $INITSCRIPT
 logger -p local0.notice -t $LOGTAG "neo4j bootstrap script completed"

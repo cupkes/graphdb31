@@ -61,14 +61,48 @@ else
 	exit 1
 fi
 # ensure bootstrap files exist in neo4j user home directory
-if [[ -f $SUPPORT_TGZ_FILE && -f $NEO4J_SERVER_TGZ  && -f $CLUSTERCONF_FILE && -f $SAMBACONF_FILE && -f $NEO4J_SERVER_CONFIG_FILE ]]; then
-	echo "required files found"
+
+if [ -f $SUPPORT_TGZ_FILE ]; then
+	echo "support tarball: $SUPPORT_TGZ_FILE found"
 else
-	echo "unable to locate all required files"
-	echo "ERROR: Missing required files." >> $NEOLOG
+	echo "unable to locate support tarball: $SUPPORT_TGZ_FILE"
+	echo "$(date) ERROR: Missing support tarball: $SUPPORT_TGZ_FILE." >> $NEOLOG
 	logger -p local0.notice -t $LOGTAG "ERROR:  cannot find bootstrap files"
 	exit 2
 fi
+if [ -f $NEO4J_SERVER_TGZ ]; then  
+	echo "server tarball: $NEO4J_SERVER_TGZ found"
+else
+	echo "unable to locate server tarball: $NEO4J_SERVER_TGZ"
+	echo "$(date) ERROR: Missing server tarball: $NEO4J_SERVER_TGZ." >> $NEOLOG
+	logger -p local0.notice -t $LOGTAG "ERROR:  cannot find bootstrap files"
+	exit 2
+fi
+if [ -f $CLUSTERCONF_FILE ]; then  
+	echo "cluster config: $CLUSTERCONF_FILE found"
+else
+	echo "unable to locate cluster config: $CLUSTERCONF_FILE"
+	echo "$(date) ERROR: Missing cluster config: $CLUSTERCONF_FILE." >> $NEOLOG
+	logger -p local0.notice -t $LOGTAG "ERROR:  cannot find bootstrap files"
+	exit 2
+fi
+if [ -f $SAMBACONF_FILE ]; then  
+	echo "samba config: $SAMBACONF_FILE found"
+else
+	echo "unable to locate samba config: $SAMBACONF_FILE"
+	echo "$(date) ERROR: Missing samba config: $SAMBACONF_FILE." >> $NEOLOG
+	logger -p local0.notice -t $LOGTAG "ERROR:  cannot find bootstrap files"
+	exit 2
+fi
+if [ -f $NEO4J_SERVER_CONFIG_FILE ]; then  
+	echo "server config: $NEO4J_SERVER_CONFIG_FILE found"
+else
+	echo "unable to locate server config: $NEO4J_SERVER_CONFIG_FILE"
+	echo "$(date) ERROR: Missing server config: $NEO4J_SERVER_CONFIG_FILE." >> $NEOLOG
+	logger -p local0.notice -t $LOGTAG "ERROR:  cannot find bootstrap files"
+	exit 2
+fi
+
 # locate or initialize install log file
 if [ -e $NEOLOG ]; then
 	echo "located log file"
