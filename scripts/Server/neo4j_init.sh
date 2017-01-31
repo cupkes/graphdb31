@@ -441,7 +441,7 @@ logger -p local0.notice -t $LOGTAG "neo4j file and directory ownership changed"
 # copy cluster.conf neo4j_smb.conf and neo4j_install.log to $NEOBASE
 #-------------------------------------------------------------------
 rm $NEOBASE/$NEOLOG && cp $NEOUSERHOME/$NEOLOG $NEOBASE/$NEOLOG
-rm $NOEBASE/$CLUSTERCONF_FILE && cp $NEOUSERHOME/$CLUSTERCONF_FILE $NEOBASE/$CLUSTERCONF_FILE
+rm $NEOBASE/$CLUSTERCONF_FILE && cp $NEOUSERHOME/$CLUSTERCONF_FILE $NEOBASE/$CLUSTERCONF_FILE
 cp $NEOUSERHOME/$SAMBACONF_FILE $NEOBASE/$SAMBACONF_FILE
 
 
