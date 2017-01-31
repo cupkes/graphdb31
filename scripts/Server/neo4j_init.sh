@@ -443,6 +443,7 @@ logger -p local0.notice -t $LOGTAG "neo4j file and directory ownership changed"
 # includes installing Java, Intrustion Detection,
 # Auditing, Samba and Firewall Configuration
 #------------------------------------------------
+cd $NEOBASE
 echo "executing host package installation and configuration file"
 echo "$(date) executing host package installation and configuration file" >> $NEOLOG
 
