@@ -437,6 +437,14 @@ chown -R neo4j:neo4j $NEOBASE
 chown -R neo4j:neo4j $NEOSUPP
 
 logger -p local0.notice -t $LOGTAG "neo4j file and directory ownership changed"
+#-------------------------------------------------------------------
+# copy cluster.conf neo4j_smb.conf and neo4j_install.log to $NEOBASE
+#-------------------------------------------------------------------
+rm $NEOBASE/$NEOLOG && cp $NEOHOME/$NEOLOG $NEOBASE/$NEOLOG
+rm $NOEBASE/$CLUSTERCONF_FILE && cp $NEOHOME/$CLUSTERCONF_FILE $NEOBASE/$CLUSTERCONF_FILE
+cp $NEOHOME/$SAMBACONF_FILE $NEOBASE/$SAMBACONF_FILE
+
+
 
 #------------------------------------------------
 # Initialize host machine
