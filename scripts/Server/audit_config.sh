@@ -40,7 +40,7 @@ fi
 
 
 
-auditctl -R /usr/share/doc/audit-version/stig.rules
+auditctl -R /usr/share/doc/audit-2.4.1/stig.rules
 if [ $? -eq 0 ]; then
 	echo "audit rules loaded"
 	logger -p local0.notice -t $LOGTAG "auditing rules loaded and auditing started"
